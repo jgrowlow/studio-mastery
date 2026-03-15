@@ -3977,6 +3977,9 @@ function startMode(mode) {
 }
 
 function selectTopic(topicId, topicTitle, el) {
+  var appLayout = document.querySelector('.app-layout');
+  if (appLayout) appLayout.style.display = 'grid';
+
   currentTopic = topicId;
   currentTopicTitle = topicTitle;
   conversationHistory = [];
@@ -4205,8 +4208,7 @@ function showFeedback() {
 }
 
 function hideFeedback() {
-  document.getElementById('feedback-panel').style.display = 'none';
-  document.getElementById('welcome').style.display = 'flex';
+  returnHome();
 }
 
 function setFbRating(btn, rating) {
@@ -4544,8 +4546,15 @@ function clearFeedbackForm() {
 
 
 function hideAllPanels() {
-  document.getElementById('welcome').style.display = 'none';
-  document.getElementById('chat').classList.remove('visible');
+  var appLayout = document.querySelector('.app-layout');
+  if (appLayout) appLayout.style.display = 'none';
+
+  var welcome = document.getElementById('welcome');
+  if (welcome) welcome.style.display = 'none';
+
+  var chat = document.getElementById('chat');
+  if (chat) chat.classList.remove('visible');
+
   var panels = ['calendar-panel','journal-panel','agents-panel','assessment-panel','gear-panel','feedback-panel'];
   panels.forEach(function(id) {
     var el = document.getElementById(id);
@@ -4555,6 +4564,10 @@ function hideAllPanels() {
 
 function returnHome() {
   hideAllPanels();
+
+  var appLayout = document.querySelector('.app-layout');
+  if (appLayout) appLayout.style.display = 'grid';
+
   document.getElementById('welcome').style.display = 'flex';
   // Reset chat state so stale topic/mode badge doesn't show on return
   currentTopic = '';
@@ -4562,6 +4575,7 @@ function returnHome() {
   conversationHistory = [];
   clearMessages();
   document.getElementById('quick-prompts').innerHTML = '';
+  window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
 // ─── END PANEL NAVIGATION HELPERS ────────────────────────────────────────────
@@ -4593,8 +4607,7 @@ function showGear(fromCard) {
 }
 
 function hideGear() {
-  document.getElementById('gear-panel').style.display = 'none';
-  document.getElementById('welcome').style.display = 'flex';
+  returnHome();
 }
 
 // ─── END GEAR GUIDE ──────────────────────────────────────────────────────────
@@ -5106,8 +5119,7 @@ function showAssessment(autoStart) {
 }
 
 function hideAssessment() {
-  document.getElementById('assessment-panel').style.display = 'none';
-  document.getElementById('welcome').style.display = 'flex';
+  returnHome();
 }
 
 function startAssessment() {
@@ -5459,8 +5471,7 @@ function showAgents() {
 }
 
 function hideAgents() {
-  document.getElementById('agents-panel').style.display = 'none';
-  document.getElementById('welcome').style.display = 'flex';
+  returnHome();
 }
 
 async function callAgent(prompt, outputId, typingId, btnId) {
@@ -5713,8 +5724,7 @@ function showJournal() {
 }
 
 function hideJournal() {
-  document.getElementById('journal-panel').style.display = 'none';
-  document.getElementById('welcome').style.display = 'flex';
+  returnHome();
 }
 
 function renderJournalList() {
@@ -6160,8 +6170,7 @@ function showCalendar() {
 }
 
 function hideCalendar() {
-  document.getElementById('calendar-panel').style.display = 'none';
-  document.getElementById('welcome').style.display = 'flex';
+  returnHome();
 }
 
 function showPhase(idx, btn) {
