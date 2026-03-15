@@ -55,13 +55,15 @@
   }
 
   /* Header */
-  header {
+  .app-header {
     padding: 24px 40px 20px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
     background: var(--surface);
+    position: relative;
+    z-index: 10;
   }
 
   .logo {
@@ -2300,7 +2302,7 @@
 
 <div class="vu-bar"></div>
 
-<header>
+<header class="app-header">
   <div class="logo" onclick="returnHome()" style="cursor:pointer" title="Return to dashboard">
     Studio Mastery
     <span>// ABLETON · PRODUCTION · MIXING · LIVE SETS</span>
