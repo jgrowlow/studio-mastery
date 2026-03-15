@@ -2308,13 +2308,13 @@
   <div class="header-controls">
     <button class="mode-pill" onclick="showFeedback()" style="border-color:rgba(255,92,60,0.4);color:#ff8c6e">🎸 Eng. Feedback</button>
     <button class="mode-pill" onclick="showGear()">🛒 Gear Guide</button>
-    <button class="mode-pill" onclick="showAssessment()">🎯 Assessment</button>
+    <button class="mode-pill" onclick="showAssessment(true)">🎯 Assessment</button>
     <button class="mode-pill" onclick="showAgents()">🤖 Agents</button>
     <button class="mode-pill" onclick="showJournal()">📓 Journal</button>
     <button class="mode-pill" onclick="showCalendar()">📅 Schedule</button>
-    <button class="mode-pill active" onclick="setMode('curriculum', this)">Curriculum</button>
-    <button class="mode-pill" onclick="setMode('quiz', this)">Quiz Me</button>
-    <button class="mode-pill" onclick="setMode('deep', this)">Deep Dive</button>
+    <button class="mode-pill active" onclick="startMode('curriculum')">Curriculum</button>
+    <button class="mode-pill" onclick="startMode('quiz')">Quiz Me</button>
+    <button class="mode-pill" onclick="startMode('deep')">Deep Dive</button>
   </div>
 </header>
 
@@ -2814,12 +2814,12 @@
       </div>
 
       <div class="mode-cards">
-        <div class="mode-card" style="--card-accent: #ff3caa" onclick="showAssessment()">
+        <div class="mode-card" style="--card-accent: #ff3caa" onclick="showAssessment(true)">
           <div class="mode-card-icon">🎯</div>
           <div class="mode-card-title">Start Here</div>
           <div class="mode-card-desc">New to the program? Take the intake assessment to find your starting point, identify gaps, and get a customized program with an accurate finish line.</div>
         </div>
-        <div class="mode-card" style="--card-accent: var(--vu-green)" onclick="showGear()">
+        <div class="mode-card" style="--card-accent: var(--vu-green)" onclick="showGear(true)">
           <div class="mode-card-icon">🛒</div>
           <div class="mode-card-title">Gear Guide</div>
           <div class="mode-card-desc">Required gear, optional upgrades, and a Good / Better / Best model for every category. Know exactly what to buy before you spend a dollar.</div>
@@ -3786,35 +3786,6 @@
 <script>
 const API_URL = "https://studio-mastery-proxy.jgrowlow.workers.dev";
 
-async function callAnthropic(payload) {
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-
-  const raw = await response.text();
-  let data;
-
-  try {
-    data = raw ? JSON.parse(raw) : {};
-  } catch (parseErr) {
-    throw new Error('Non-JSON response from proxy: ' + (raw || '(empty response)').slice(0, 300));
-  }
-
-  if (!response.ok) {
-    const message = data?.error?.message || data?.message || data?.error || ('HTTP ' + response.status);
-    throw new Error(String(message));
-  }
-
-  const reply = data?.content?.[0]?.text;
-  if (!reply) {
-    throw new Error('Unexpected API response shape: ' + JSON.stringify(data).slice(0, 400));
-  }
-
-  return { data, reply, status: response.status };
-}
-
 let currentMode = 'curriculum';
 let currentLevel = 'intermediate';
 let currentTopic = '';
@@ -4125,12 +4096,19 @@ async function sendMessageWithText(text, isAuto) {
     + engineerFeedbackNote;
 
   try {
-    const { reply } = await callAnthropic({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      system: systemPrompt,
-      messages: conversationHistory
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: conversationHistory
+      })
     });
+
+    const data = await response.json();
+    const reply = data.content?.[0]?.text || "Sorry, something went wrong.";
 
     conversationHistory.push({ role: 'assistant', content: reply });
 
@@ -4138,9 +4116,8 @@ async function sendMessageWithText(text, isAuto) {
     appendMessage('assistant', reply);
 
   } catch (err) {
-    console.error('Chat request failed:', err);
     typing.classList.remove('visible');
-    appendMessage('assistant', '<div class="callout">⚠️ ' + String(err.message || err) + '</div>');
+    appendMessage('assistant', '<div class="callout">⚠️ Connection error. Please check your network and try again.</div>');
   }
 
   isLoading = false;
@@ -4217,6 +4194,7 @@ function fbSave() {
 
 function showFeedback() {
   hideAllPanels();
+  window.scrollTo({ top: 0, behavior: 'auto' });
   var fp = document.getElementById('feedback-panel');
   fp.style.display = 'flex';
   fp.style.flexDirection = 'column';
@@ -4440,12 +4418,17 @@ async function submitFeedback() {
       }];
     }
 
-    var apiResult = await callAnthropic({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: messages
+    var response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: messages
+      })
     });
-    var synthesis = apiResult.reply;
+    var data = await response.json();
+    var synthesis = data.content && data.content[0] ? data.content[0].text : 'Synthesis failed — please try again.';
 
     // Save session — store a brief raw summary for trend analysis, NOT full raw text
     var rawSummary = isPdf ? '[PDF feedback — ' + fbFileName + ']'
@@ -4479,13 +4462,12 @@ async function submitFeedback() {
     if (body) body.scrollTop = 0;
 
   } catch(err) {
-    console.error('Feedback synthesis failed:', err);
     document.getElementById('fb-typing').classList.remove('visible');
     var body = document.getElementById('fb-response-body');
     if (body) {
       var errDiv = document.createElement('div');
       errDiv.className = 'feedback-entry-card';
-      errDiv.innerHTML = '<div class="feedback-entry-body"><div class="callout">&#9888; ' + String(err.message || err) + '</div></div>';
+      errDiv.innerHTML = '<div class="feedback-entry-body"><div class="callout">&#9888; Connection error. Please check your network and try again.</div></div>';
       body.insertBefore(errDiv, body.firstChild);
     }
   }
@@ -4592,11 +4574,20 @@ function showEnvAssessment() {
 
 
 
-function showGear() {
+function showGear(fromCard) {
   hideAllPanels();
   const gp = document.getElementById('gear-panel');
   gp.style.display = 'flex';
   gp.style.flexDirection = 'column';
+  gp.scrollTop = 0;
+  window.scrollTo({ top: 0, behavior: fromCard ? 'smooth' : 'auto' });
+  const gearTitle = gp.querySelector('.gear-title');
+  if (gearTitle && fromCard) {
+    gearTitle.animate([
+      { opacity: 0.55, transform: 'translateY(6px)' },
+      { opacity: 1, transform: 'translateY(0)' }
+    ], { duration: 220, easing: 'ease-out' });
+  }
 }
 
 function hideGear() {
@@ -5089,11 +5080,14 @@ let assessmentAnswers = {};
 let currentQIndex = -1;
 let assessmentProfileText = '';
 
-function showAssessment() {
+function showAssessment(autoStart) {
   hideAllPanels();
+  window.scrollTo({ top: 0, behavior: 'auto' });
   const ap = document.getElementById('assessment-panel');
   ap.style.display = 'flex';
   ap.style.flexDirection = 'column';
+  ap.scrollTop = 0;
+  window.scrollTo({ top: 0, behavior: autoStart ? 'smooth' : 'auto' });
   currentQIndex = -1;
   assessmentAnswers = {};
   document.getElementById('assessment-intro').style.display = 'block';
@@ -5101,6 +5095,12 @@ function showAssessment() {
   document.getElementById('assessment-generating').classList.remove('visible');
   document.getElementById('assessment-results').classList.remove('visible');
   document.getElementById('assessment-prog-wrap').style.display = 'none';
+
+  if (autoStart) {
+    setTimeout(function() {
+      startAssessment();
+    }, 120);
+  }
 }
 
 function hideAssessment() {
@@ -5248,15 +5248,19 @@ Be direct and practical — not generic acoustics theory. Tell them exactly what
 Be honest, specific, and direct throughout. Reference specific answers they gave. Do not be generically encouraging — be genuinely useful. The student deserves an accurate picture of where they are and where they're going.`;
 
   try {
-    const { reply } = await callAnthropic({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: [{ role: 'user', content: prompt }]
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
     });
-    assessmentProfileText = reply;
+    const data = await response.json();
+    assessmentProfileText = data.content && data.content[0] ? data.content[0].text : 'Assessment generation failed — please try again.';
   } catch(err) {
-    console.error('Assessment generation failed:', err);
-    assessmentProfileText = '<div class="callout">⚠️ ' + String(err.message || err) + '</div>';
+    assessmentProfileText = '<div class="callout">⚠️ Connection error. Please check your network and try again.</div>';
   }
 
   document.getElementById('assessment-generating').classList.remove('visible');
@@ -5349,20 +5353,24 @@ async function runEnvironmentSetup() {
   document.getElementById('env-save-wrap').style.display = 'none';
 
   try {
-    const { reply } = await callAnthropic({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: [{ role: 'user', content: prompt }]
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
     });
-    lastEnvironmentReport = reply;
+    const data = await response.json();
+    lastEnvironmentReport = data.content && data.content[0] ? data.content[0].text : 'Assessment failed — please try again.';
     typing.classList.remove('visible');
     output.innerHTML = processMarkdown(lastEnvironmentReport);
     output.classList.add('visible');
     document.getElementById('env-save-wrap').style.display = 'block';
   } catch(err) {
-    console.error('Environment setup failed:', err);
     typing.classList.remove('visible');
-    output.innerHTML = '<div class="callout">&#9888; ' + String(err.message || err) + '</div>';
+    output.innerHTML = '<div class="callout">&#9888; Connection error. Please try again.</div>';
     output.classList.add('visible');
   }
   btn.disabled = false;
@@ -5442,6 +5450,7 @@ function getUserProfile() {
 
 function showAgents() {
   hideAllPanels();
+  window.scrollTo({ top: 0, behavior: 'auto' });
   const ap = document.getElementById('agents-panel');
   ap.style.display = 'flex';
   ap.style.flexDirection = 'column';
@@ -5480,18 +5489,23 @@ async function callAgent(prompt, outputId, typingId, btnId) {
   output.innerHTML = '';
 
   try {
-    const { reply } = await callAnthropic({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: [{ role: 'user', content: prompt }]
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
     });
+    const data = await response.json();
+    const reply = data.content && data.content[0] ? data.content[0].text : 'Something went wrong — please try again.';
     typing.classList.remove('visible');
     output.innerHTML = processMarkdown(reply);
     output.classList.add('visible');
   } catch(err) {
-    console.error('Agent call failed:', err);
     typing.classList.remove('visible');
-    output.innerHTML = '<div class="callout">⚠️ ' + String(err.message || err) + '</div>';
+    output.innerHTML = '<div class="callout">⚠️ Connection error. Please check your network and try again.</div>';
     output.classList.add('visible');
   }
   btn.disabled = false;
@@ -5688,6 +5702,7 @@ function journalSave() {
 
 function showJournal() {
   hideAllPanels();
+  window.scrollTo({ top: 0, behavior: 'auto' });
   const jp = document.getElementById('journal-panel');
   jp.style.display = 'flex';
   jp.style.flexDirection = 'column';
@@ -6132,6 +6147,7 @@ let activePhase = 0;
 
 function showCalendar() {
   hideAllPanels();
+  window.scrollTo({ top: 0, behavior: 'auto' });
   const cp = document.getElementById('calendar-panel');
   cp.style.display = 'flex';
   cp.style.flexDirection = 'column';
