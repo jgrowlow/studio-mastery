@@ -1,0 +1,398 @@
+/* ── SKILL SCAN SHELL ─────────────────────────────────────── */
+.skillscan-shell {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  
+  .skillscan-loading {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .skillscan-loading-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--muted);
+  }
+  
+  /* ── HEADER ───────────────────────────────────────────────── */
+  .skillscan-header {
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  
+  .skillscan-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 4px;
+    color: var(--accent);
+  }
+  
+  .skillscan-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .skillscan-progress-bar {
+    width: 200px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  .skillscan-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+  
+  .skillscan-progress-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  
+  /* ── QUESTION ─────────────────────────────────────────────── */
+  .skillscan-question {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+  }
+  
+  .skillscan-q-inner {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .skillscan-q-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  
+  .skillscan-q-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(28px, 4vw, 42px);
+    letter-spacing: 2px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  
+  .skillscan-q-subtext {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    font-family: 'DM Sans', sans-serif;
+    max-width: 560px;
+  }
+  
+  /* ── INPUT AREA ───────────────────────────────────────────── */
+  .skillscan-q-input {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  
+  .skillscan-textarea {
+    width: 100%;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  
+  .skillscan-textarea:focus {
+    border-color: var(--accent);
+  }
+  
+  .skillscan-textarea::placeholder {
+    color: var(--muted);
+    font-style: italic;
+  }
+  
+  /* ── OPTIONS ──────────────────────────────────────────────── */
+  .skillscan-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .skillscan-option {
+    width: 100%;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.15s;
+  }
+  
+  .skillscan-option:hover {
+    border-color: var(--accent);
+    background: var(--surface2);
+  }
+  
+  .skillscan-option.selected {
+    border-color: var(--accent);
+    background: rgba(232,255,60,0.06);
+    color: var(--accent);
+  }
+  
+  .skillscan-option-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  
+  .skillscan-option.selected .skillscan-option-dot {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+  
+  .skillscan-option-check {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #000;
+    transition: all 0.15s;
+  }
+  
+  .skillscan-option.multi.selected .skillscan-option-check {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+  
+  .skillscan-other-input {
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+  }
+  
+  /* ── ESCAPE BUTTON ────────────────────────────────────────── */
+  .skillscan-escape-btn {
+    align-self: flex-start;
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  
+  .skillscan-escape-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  
+  /* ── ACTIONS ──────────────────────────────────────────────── */
+  .skillscan-q-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .skillscan-next-btn {
+    padding: 14px 32px;
+    background: var(--accent);
+    border: none;
+    border-radius: 6px;
+    color: #000;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .skillscan-next-btn:hover:not(:disabled) {
+    background: #fff;
+    transform: translateY(-1px);
+  }
+  
+  .skillscan-next-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  
+  .skillscan-back-btn {
+    padding: 14px 20px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  
+  .skillscan-back-btn:hover:not(:disabled) {
+    border-color: var(--text);
+    color: var(--text);
+  }
+  
+  .skillscan-skip-btn {
+    padding: 14px 20px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: color 0.15s;
+    text-decoration: underline;
+  }
+  
+  .skillscan-skip-btn:hover { color: var(--text); }
+  
+  /* ── SUMMARY ──────────────────────────────────────────────── */
+  .skillscan-summary-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .skillscan-summary-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+  }
+  
+  .skillscan-dots {
+    display: flex;
+    gap: 6px;
+  }
+  
+  .skillscan-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: dot-pulse 1.2s ease-in-out infinite;
+  }
+  
+  .skillscan-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .skillscan-dots span:nth-child(3) { animation-delay: 0.4s; }
+  
+  @keyframes dot-pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+  
+  .skillscan-summary-loading-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+  }
+  
+  .skillscan-summary-text {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+  }
+  
+  .skillscan-error {
+    padding: 12px 16px;
+    background: rgba(255,92,60,0.08);
+    border: 1px solid rgba(255,92,60,0.2);
+    border-radius: 6px;
+    color: var(--accent2);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+  }
+
+  /* ── ADDITIONAL CONTEXT ───────────────────────────────────── */
+.skillscan-additional {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 8px;
+  }
+  
+  .skillscan-additional-label {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+    font-family: 'DM Sans', sans-serif;
+  }
+  
+  .skillscan-additional-examples {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+    font-family: 'DM Sans', sans-serif;
+    font-style: italic;
+  }
